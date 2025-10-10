@@ -1,0 +1,25 @@
+@startuml DoctorConsultaResultadosLab
+title Doctor Consulta Resultados Lab
+|Usuario|
+start
+:Solicita tabla de resultados de laboratorio;
+
+|#AntiqueWhite|Servidor|
+:Recupera información de \nresultados de laboratorio de \npacientes;
+:Entrega vista con información;
+
+|Usuario|
+:Filtra resultados por nombre;
+
+|Servidor|
+:Actualiza información con \nnuevo filtro;
+
+|Usuario|
+:Selecciona el paciente que \nquiere consultar;
+
+|Servidor|
+:Recupera información de \npaciente;
+:Muestra información de \nresultados del paciente de \nestudios;
+
+stop
+@enduml

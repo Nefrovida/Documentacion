@@ -1,0 +1,31 @@
+@startuml DoctorConsultaResultadosDeLaboratorio
+title Doctor consulta resultados de laboratorio
+
+actor Doctor as doc
+boundary lab.routes as rt
+control lab.controller as ct
+entity lab.model as md
+database Nefrovida as db
+
+' Buscar historiales de pacientes
+doc ++
+doc -> rt --++ : request Route
+rt -> ct --++ : getLabResults()
+ct --> md  ++ : getLabResults()
+md --> db ++ : Query('SELECT * from patients \nJOIN lab where p.id = l.id')
+db -->> md -- : {Regresa información de los \npacientes con resultados de laboratorio}
+md -->> ct -- : {Regresa información de los \npacientes con resultados de laboratorio}
+ct -> ct : Procesar información
+ct -> doc --++: Actualiza información de la \nvista con los resultados de \nlos pacientes y su estatus
+
+' Abrir resultados de laboratorio de paciente particular
+doc -> rt --++: Buscar resultados de laboratorio de un paciente
+rt -> ct --++: getPatientLabResults()
+ct --> md ++: getLabResults(patientId)
+md --> db ++: Query(SELECT * from patients \nJOIN lab where p.id = ?.id \nAND p.id = l.id) 
+db -->> md --: {Resultados de estudios de laboratorio}
+md -->> ct --: {Resultados de estudios de laboratorio del paciente}
+ct -> doc --++: {Resultados de estudios de laboratorio \ndel paciente}
+
+
+@enduml
