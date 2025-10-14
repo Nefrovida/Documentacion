@@ -18,29 +18,35 @@ vw -> vm --++ : onLabResultsScreenLoaded()
 vm -> uCL --++ : getLabResults()
 uCL -> rt --++ : GET /api/lab/:page
 rt -> ct --++ : getLabResults()
-ct ->> md  ++ : getLabResults()
-md ->> db ++ : Query('SELECT * from patients \nJOIN lab where p.id = l.id')
-db -->> md -- : {Regresa información de los \npacientes con resultados de laboratorio}
-md -->> ct -- : {Regresa información de los \npacientes con resultados de laboratorio}
-ct -> ct : Procesar información
-ct -> uCL --++: Datos procesados
-uCL -> vm --++ : Serializar datos
-vm -> vw --++ : Mostrar lista de resultados de laboratorio
+alt Usuario tiene permisos
+  ct ->> md  ++ : getLabResults()
+  md ->> db ++ : Query('SELECT * from patients \nJOIN lab where p.id = l.id')
+  db -->> md -- : {Regresa información de los \npacientes con resultados de laboratorio}
+  md -->> ct -- : {Regresa información de los \npacientes con resultados de laboratorio}
+  ct -> ct : Procesar información
+  ct -> uCL --++: Datos procesados
+  uCL -> vm --++ : Serializar datos
+  vm -> vw --++ : Mostrar lista de resultados de laboratorio
 
-' Abrir resultados de laboratorio de paciente particular
-activate doc
-doc -> vw --: Ver detalles de resultados de paciente
-vw -> vm --++: onPatientLabResultScreenLoaded()
-vm -> uCD --++: getLabResults({patientID})
-uCD -> rt --++: GET /api/lab/patient {id: patientID cypher}
-rt -> ct --++: getLabResults(patientID)
-ct ->> md ++: getLabResults(patientId)
-md ->> db ++: Query(SELECT * from patients \nJOIN lab where p.id = ?.id \nAND p.id = l.id) 
-db -->> md --: {Resultados de estudios de laboratorio}
-md -->> ct --: {Resultados de estudios de laboratorio del paciente}
-ct -> uCD --++: Información de resultados de paciente
-uCD -> vm --++ : Serializar datos
-vm -> vw --++ : Mostrar información de reporte
-deactivate doc
+  ' Abrir resultados de laboratorio de paciente particular
+  activate doc
+  doc -> vw --: Ver detalles de resultados de paciente
+  vw -> vm --++: onPatientLabResultScreenLoaded()
+  vm -> uCD --++: getLabResults({patientID})
+  uCD -> rt --++: GET /api/lab/patient {id: patientID cypher}
+  rt -> ct --++: getLabResults(patientID)
+  ct ->> md ++: getLabResults(patientId)
+  md ->> db ++: Query(SELECT * from patients \nJOIN lab where p.id = ?.id \nAND p.id = l.id) 
+  db -->> md --: {Resultados de estudios de laboratorio}
+  md -->> ct --: {Resultados de estudios de laboratorio del paciente}
+  ct -> uCD --++: Información de resultados de paciente
+  uCD -> vm --++ : Serializar datos
+  vm -> vw --: Mostrar información de reporte
+  activate ct
+else Usuario no tiene permisos  
+  ct -> uCL --++: Mensaje de error {401}: No tienes permisos para ver esto
+  uCL -> vm --++ : Error
+  vm -> vw --++ : Error 401, no tienes permiso para ver está información
+end
 
 @enduml
