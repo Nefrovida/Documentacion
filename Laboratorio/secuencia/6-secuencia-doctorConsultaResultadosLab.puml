@@ -2,6 +2,10 @@
 title Doctor consulta resultados de laboratorio
 
 actor Doctor as doc
+boundary "View (App Movil)" as vw
+boundary "ViewModel (LabViewModel)" as vm
+control "UseCase \n(Obtener Lista \nResultados)" as uCL
+control "UseCase \n(Obtener Detalles \nde Resultados)" as uCD
 boundary lab.routes as rt
 control lab.controller as ct
 entity lab.model as md
@@ -9,23 +13,34 @@ database Nefrovida as db
 
 ' Buscar historiales de pacientes
 doc ++
-doc -> rt --++ : request Route
+doc -> vw --++ : Navegar a Resultados de laboratorio
+vw -> vm --++ : onLabResultsScreenLoaded()
+vm -> uCL --++ : getLabResults()
+uCL -> rt --++ : GET /api/lab/:page
 rt -> ct --++ : getLabResults()
-ct --> md  ++ : getLabResults()
-md --> db ++ : Query('SELECT * from patients \nJOIN lab where p.id = l.id')
+ct ->> md  ++ : getLabResults()
+md ->> db ++ : Query('SELECT * from patients \nJOIN lab where p.id = l.id')
 db -->> md -- : {Regresa información de los \npacientes con resultados de laboratorio}
 md -->> ct -- : {Regresa información de los \npacientes con resultados de laboratorio}
 ct -> ct : Procesar información
-ct -> doc --++: Actualiza información de la \nvista con los resultados de \nlos pacientes y su estatus
+ct -> uCL --++: Datos procesados
+uCL -> vm --++ : Serializar datos
+vm -> vw --++ : Mostrar lista de resultados de laboratorio
 
 ' Abrir resultados de laboratorio de paciente particular
-doc -> rt --++: Buscar resultados de laboratorio de un paciente
-rt -> ct --++: getPatientLabResults()
-ct --> md ++: getLabResults(patientId)
-md --> db ++: Query(SELECT * from patients \nJOIN lab where p.id = ?.id \nAND p.id = l.id) 
+activate doc
+doc -> vw --: Ver detalles de resultados de paciente
+vw -> vm --++: onPatientLabResultScreenLoaded()
+vm -> uCD --++: getLabResults({patientID})
+uCD -> rt --++: GET /api/lab/patient {id: patientID cypher}
+rt -> ct --++: getLabResults(patientID)
+ct ->> md ++: getLabResults(patientId)
+md ->> db ++: Query(SELECT * from patients \nJOIN lab where p.id = ?.id \nAND p.id = l.id) 
 db -->> md --: {Resultados de estudios de laboratorio}
 md -->> ct --: {Resultados de estudios de laboratorio del paciente}
-ct -> doc --++: {Resultados de estudios de laboratorio \ndel paciente}
-
+ct -> uCD --++: Información de resultados de paciente
+uCD -> vm --++ : Serializar datos
+vm -> vw --++ : Mostrar información de reporte
+deactivate doc
 
 @enduml
