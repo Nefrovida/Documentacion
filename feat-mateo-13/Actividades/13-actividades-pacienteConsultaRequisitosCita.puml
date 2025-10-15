@@ -1,0 +1,29 @@
+@startuml
+title Consultar requisitos previos a cita
+|Paciente|
+start
+:Selecciona consultar\nrequisitos cita;
+|Sistema|
+:Valida que la sesión\nesté activa;
+if (Sesión activa) then (sí)
+    :Valida que el paciente\ntenga citas;
+    if (Paciente con citas) then (sí)
+        :Recupera datos\ncitas_activas_usuario;
+    else (no)
+        :Despliega mensaje de\nerror "El usuario no tiene\nninguna cita activa";
+        end
+    endif
+else (no)
+    :Despliega mensaje de\nerror "La sesión del\nusuario ya no está\nen activo";
+    end
+endif
+:Despliega lista de\ncitas activas;
+|Paciente|
+:Elige cita a consultar;
+|Sistema|
+:Recupera datos requisitos_citas;
+:Despliega requisitos\nde la cita elegida;
+|Paciente|
+:Consulta requisitos\nde la cita elegida;
+stop
+@enduml
