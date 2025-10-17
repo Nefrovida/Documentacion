@@ -1,0 +1,33 @@
+@startuml
+actor Paciente
+Paciente -> CitasView: 1. Selecciona consultar\nrequisitos cita
+CitasView -> CitasViewModel: 2. verSesionActiva (usuario, sesionActual) 
+CitasViewModel -> CitasModel: 3. verSesionActiva (usuario, sesionActual)
+CitasModel -> CitasViewModel: 4. Devuelve resultado (éxito)
+alt Sesión Inactiva
+    CitasModel -> CitasViewModel: 1a. Devuelve resultado (fallo)
+    CitasViewModel -> CitasView: 2a. Notifica status de sesión
+    CitasView -> Paciente: 3a. Despliega mensaje de\nerror "La sesión del\nusuario ya no está\nen activo
+end
+CitasViewModel -> CitasModel: 5. verCitasActivas (usuario, citas)
+database Base_de_Datos
+CitasModel -> Base_de_Datos: 6. SELECT * from citas WHERE usuario.id = ?
+alt Sin Citas Activas
+    Base_de_Datos -> CitasModel: 1b. Devuelve query vacío
+    CitasModel -> CitasViewModel: 2b. Devuelve resultado (fallo)
+    CitasViewModel -> CitasView: 3b. Notifica status de citas
+    CitasView -> Paciente: 4b. Despliega mensaje de\nerror "El usuario no tiene\nninguna cita activa"
+end
+Base_de_Datos -> CitasModel:  7. Devuelve información de query
+CitasModel -> CitasViewModel: 8. Devuelve resultado (éxito)
+CitasViewModel -> CitasView: 9. Notifica status de citas
+CitasView -> Paciente: 10. Despliega lista de citas activas
+Paciente -> CitasView: 11. Elige cita a consultar
+CitasView -> CitasViewModel: 12. verDatosCita (usuario, cita)
+CitasViewModel -> CitasModel: 13. verDatosCita (usuario, cita)
+CitasModel -> Base_de_Datos: 14. SELECT * from cita WHERE cita.id = ?
+Base_de_Datos -> CitasModel: 15. Devuelve información de query
+CitasModel -> CitasViewModel: 16. Devuelve resultado (éxito)
+CitasViewModel -> CitasModel: 17. Notifica información de cita
+CitasModel -> Paciente: 18. Despliega requisitos de la cita elegida
+@enduml
