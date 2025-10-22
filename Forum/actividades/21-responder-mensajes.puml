@@ -1,0 +1,29 @@
+@startuml ResponderMensajes
+title Responder Mensajes de Foro
+|Usuario|
+start
+:Selecciona mensaje a responder;
+
+|#AntiqueWhite|Servidor|
+:Crea etiqueta de usuario y referencia al contenido del mensaje;
+
+repeat
+  :Actualiza la sección de mensaje con etiqueta;
+  |Usuario|
+
+  :Escribe texto;
+  :Click enviar mensaje;
+
+  |Servidor|
+  if (contenido está vació) then (Si)
+    :Error;
+  else 
+    :Manda mensaje;
+    :Actualiza el foro;
+    stop
+  endif 
+repeat while ("Mensaje vacío")
+
+
+
+@enduml
