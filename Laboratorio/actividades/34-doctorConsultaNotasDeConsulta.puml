@@ -1,0 +1,31 @@
+@startuml DoctorConsultaNotasDeConsulta
+title Doctor consulta notas de consulta
+
+|Doctor|
+:Abre el apartado de notas;
+
+|#AntiqueWhite|Sistema|
+:Recupera información de los pacientes;
+
+|Doctor|
+:Selecciona a un paciente;
+
+|Sistema|
+:Despliega las notas hechas de las \ndiferentes citsa del paciente con los diferentes \ndoctores;
+
+|Doctor|
+:Filtra resultados de notas por filtros, doctor que hizo la nota, fecha;
+
+|Sistema|
+:Filtra y despliega nuevos resultados;
+
+|Doctor|
+:Selecciona una nota para ver más detalles;
+
+|Sistema|
+:Amplia la información de la nota, \npermitiendo ver todo el contenido almacenado;
+
+|Doctor|
+:Oculta el mensaje;
+
+@enduml
