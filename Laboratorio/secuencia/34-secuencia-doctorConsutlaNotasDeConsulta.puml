@@ -1,0 +1,66 @@
+@startuml DoctorConsultaNotasDeConsulta
+title Doctor consulta notas de consulta
+
+actor Doctor as doc
+boundary "View (PatientNotesView)" as vw
+boundary "ViewModel (PatientNotesVM)" as vm
+entity Repository as rp
+entity Cache as ch
+boundary lab.routes as rt
+control lab.controller as ct
+entity lab.model as md
+database Nefrovida as db
+
+activate doc
+doc -> vw --++: Solicita notas de los pacientes
+vw -> vm ++: loadPatientsWithNotes()
+vm -> rp ++: getPatientsWithNotes()
+rp -> ch ++: getPatientsWithNotes()
+alt Cache valido
+  ch -->> rp --: Pacientes con notas disponibles
+  rp -->> vm --: Pacientes con notas disponibles
+  vm -->> vw : Pacientes con notas disponibles
+
+else Cache no valido
+  activate ch
+  activate rp
+  ch -->> rp --: null
+  rp -> rt ++: GET /patients/notes
+  rt -> ct --++: loadPatientsWithNotes()
+  ct --> md ++: loadPatientsWithNotes()
+  md --> db ++: SELECT * FROM Patients WHERE Notes != 0
+  db -->> md --: Pacientes con notas disponibles
+  md -->> ct --: Pacientes con notas disponibles
+  ct -->> rp --: Pacientes con notas disponibles
+  rp -->> ch : saveToCache()
+  rp -->> vm --: Pacientes con notas disponibles
+  vm -->> vw --: Pacientes con notas disponibles
+end
+
+activate doc
+doc -> vw : Solicita notas de paciente específio
+vw -> vm ++: loadPatientNotes(patientID)
+vm -> rp ++: getPatientNotes(patientID)
+rp -> ch ++: getPatientNotes(patientID)
+alt Cache valido
+  ch -->> rp --: Notas de paciente
+  rp -->> vm --: Notas de paciente
+  vm -->> vw : Notas de paciente
+
+else Cache no valido
+  activate ch
+  activate rp
+  ch -->> rp --: null
+  rp -> rt ++: GET /patients/notes {patientID}
+  rt -> ct --++: loadPatientNotes(patientID)
+  ct --> md ++: loadPatientNotes(patientID)
+  md --> db ++: SELECT * FROM Patients JOIN Notes WHERE p.id = {id}
+  db -->> md --: Notas de paciente
+  md -->> ct --: Notas de paciente
+  ct -->> rp --: Notas de paciente
+  rp -->> ch : saveToCache()
+  rp -->> vm --: Notas de paciente
+  vm -->> vw --: Notas de paciente
+end
+
+@enduml
